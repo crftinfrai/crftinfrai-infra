@@ -1,0 +1,6 @@
+# Safe example inputs for examples/bootstrap. Replace names with globally
+# unique values before running Terraform.
+bucket_name         = "example-terraform-state-bucket"
+dynamodb_table_name = "example-terraform-state-locks"
+aws_region          = "us-east-1"
+aws_profile         = null

@@ -1,0 +1,11 @@
+[
+  {"id":"eks-rds-argocd","title":"Production EKS + RDS + Argo CD — AWS","provider":"aws","latest":"v1"},
+  {"id":"aks-postgres-monitoring","title":"AKS + PostgreSQL + Monitoring — Azure","provider":"azure","latest":"v1"},
+  {"id":"gke-cloudsql-argocd","title":"GKE + Cloud SQL + Argo CD — GCP","provider":"gcp","latest":"v1"},
+  {"id":"aws-fargate-microservices","title":"Fargate Microservices — AWS","provider":"aws","latest":"v1"},
+  {"id":"cloudrun-cloudsql-postgres","title":"Cloud Run + Cloud SQL PostgreSQL — GCP","provider":"gcp","latest":"v1"},
+  {"id":"azure-static-web-functions","title":"Static Web + Functions — Azure","provider":"azure","latest":"v1"},
+  {"id":"gcp-serverless-webapp","title":"Serverless Web App — GCP","provider":"gcp","latest":"v1"},
+  {"id":"lightweight-dev-test","title":"Lightweight Dev/Test — AWS","provider":"aws","latest":"v1"},
+  {"id":"multi-cloud-failover","title":"Multi-Cloud Failover-Ready Static Web — AWS + GCP","provider":"multi","latest":"v1"}
+]
