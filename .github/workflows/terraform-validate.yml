@@ -11,18 +11,17 @@ permissions:
 jobs:
   terraform:
     runs-on: ubuntu-latest
-    env:
-      TF_PLUGIN_CACHE_DIR: ${{ runner.temp }}/terraform-plugin-cache
     steps:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.11.2
-      - name: Prepare Terraform provider cache
+      - name: Configure Terraform plugin cache
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p "$TF_PLUGIN_CACHE_DIR"
+          echo "TF_PLUGIN_CACHE_DIR=$RUNNER_TEMP/terraform-plugin-cache" >> "$GITHUB_ENV"
+          mkdir -p "$RUNNER_TEMP/terraform-plugin-cache"
           df -h
       - run: terraform fmt -check -recursive
       - name: Validate every independent Terraform root
