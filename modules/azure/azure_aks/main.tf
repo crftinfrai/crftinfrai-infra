@@ -34,44 +34,48 @@ locals {
 
 # Cluster
 resource "azurerm_kubernetes_cluster" "this" {
-  name                = var.cluster_name
-  location            = var.location
-  resource_group_name = azurerm_resource_group.rg.name
-  dns_prefix          = var.dns_prefix
-  kubernetes_version  = var.kubernetes_version
+  name                    = var.cluster_name
+  location                = var.location
+  resource_group_name     = azurerm_resource_group.rg.name
+  dns_prefix              = var.dns_prefix
+  kubernetes_version      = var.kubernetes_version
+  private_cluster_enabled = var.private_cluster
+
+  # This module uses the traditional VM scale set node pool implementation;
+  # Azure Node Auto Provisioning is intentionally not enabled.
+  node_provisioning_profile {
+    mode = "Manual"
+  }
 
   identity {
     type = "SystemAssigned"
   }
 
   default_node_pool {
-    name                = "np01"
-    vm_size             = var.node_vm_size
-    node_count          = var.node_count
-    min_count           = var.node_min
-    max_count           = var.node_max
-    enable_auto_scaling = var.node_max > var.node_min
-    vnet_subnet_id      = local.subnet_id
-    os_disk_size_gb     = var.node_disk_gb
-    type                = "VirtualMachineScaleSets"
-    max_pods            = 110
+    name                 = "np01"
+    vm_size              = var.node_vm_size
+    node_count           = var.node_count
+    min_count            = var.node_min
+    max_count            = var.node_max
+    auto_scaling_enabled = var.node_max > var.node_min
+    vnet_subnet_id       = local.subnet_id
+    os_disk_size_gb      = var.node_disk_gb
+    type                 = "VirtualMachineScaleSets"
+    max_pods             = 110
   }
 
   network_profile {
-    network_plugin     = var.network_plugin # "azure" or "kubenet"
-    network_policy     = var.network_policy # "calico" or "azure" (when plugin=azure)
-    service_cidr       = var.service_cidr
-    dns_service_ip     = var.dns_service_ip
-    docker_bridge_cidr = var.docker_bridge_cidr
-    load_balancer_sku  = "standard"
-    outbound_type      = "loadBalancer"
+    network_plugin    = var.network_plugin # "azure" or "kubenet"
+    network_policy    = var.network_policy # "calico" or "azure" (when plugin=azure)
+    service_cidr      = var.service_cidr
+    dns_service_ip    = var.dns_service_ip
+    load_balancer_sku = "standard"
+    outbound_type     = "loadBalancer"
   }
 
   api_server_access_profile {
-    authorized_ip_ranges   = var.api_authorized_ip_ranges
-    enable_private_cluster = var.private_cluster
+    authorized_ip_ranges = var.api_authorized_ip_ranges
   }
 
   tags = var.tags
 }
-

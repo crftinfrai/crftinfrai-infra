@@ -95,6 +95,7 @@ variable "dns_service_ip" {
   default = "10.0.0.10"
 }
 variable "docker_bridge_cidr" {
-  type    = string
-  default = "172.17.0.1/16"
+  type        = string
+  default     = "172.17.0.1/16"
+  description = "Legacy compatibility input. AzureRM v5 removed docker_bridge_cidr from the AKS API and this value is no longer sent to Azure."
 }

@@ -4,7 +4,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = ">= 4.0, < 5.0"
+      version = ">= 5.0"
     }
   }
 }
@@ -244,12 +244,11 @@ resource "azurerm_private_dns_zone" "postgres" {
 }
 
 resource "azurerm_private_dns_zone_virtual_network_link" "postgres" {
-  name                  = "${var.name_prefix}-postgres-dns-link"
-  private_dns_zone_name = azurerm_private_dns_zone.postgres.name
-  resource_group_name   = azurerm_resource_group.main.name
-  virtual_network_id    = azurerm_virtual_network.main.id
-  registration_enabled  = false
-  tags                  = local.common_tags
+  name                 = "${var.name_prefix}-postgres-dns-link"
+  private_dns_zone_id  = azurerm_private_dns_zone.postgres.id
+  virtual_network_id   = azurerm_virtual_network.main.id
+  registration_enabled = false
+  tags                 = local.common_tags
 }
 
 # --------------------------------------------------
@@ -288,6 +287,10 @@ resource "azurerm_kubernetes_cluster" "main" {
   resource_group_name = azurerm_resource_group.main.name
   dns_prefix          = "${var.name_prefix}-dns"
   kubernetes_version  = var.kubernetes_version
+
+  node_provisioning_profile {
+    mode = "Manual"
+  }
 
   default_node_pool {
     name                        = "system"

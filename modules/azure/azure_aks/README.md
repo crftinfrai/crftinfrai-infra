@@ -10,7 +10,8 @@ managed identity and configurable private/public API access.
 
 ## Requirements
 
-Terraform >= 1.5 and the AzureRM provider declared in `versions.tf`.
+Terraform >= 1.6 and the AzureRM provider declared in `versions.tf` (current
+AzureRM v5-compatible schema).
 
 ## Usage
 
@@ -27,6 +28,10 @@ module "aks" {
 
 Use `resource_group_name`, `location`, `network_mode`, VNet/subnet settings,
 `cluster_name`, Kubernetes version, API access, and node sizing inputs.
+The traditional node pool uses `node_provisioning_profile { mode = "Manual" }`;
+Azure Node Auto Provisioning is not enabled. `docker_bridge_cidr` remains as a
+legacy input for caller compatibility, but AzureRM v5 no longer exposes that
+setting and the value is not sent to Azure.
 
 ## Outputs
 

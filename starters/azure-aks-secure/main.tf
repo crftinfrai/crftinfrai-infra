@@ -24,6 +24,10 @@ resource "azurerm_kubernetes_cluster" "aks" {
   resource_group_name = azurerm_resource_group.rg.name
   dns_prefix          = var.dns_prefix
 
+  node_provisioning_profile {
+    mode = "Manual"
+  }
+
   default_node_pool {
     name           = "nodepool1"
     node_count     = 2
@@ -65,7 +69,7 @@ resource "azurerm_postgresql_flexible_server" "pg" {
   high_availability { mode = "ZoneRedundant" }
 }
 
-resource "azurerm_postgresql_flexible_database" "db" {
+resource "azurerm_postgresql_flexible_server_database" "db" {
   name      = "appdb"
   server_id = azurerm_postgresql_flexible_server.pg.id
   charset   = "UTF8"
