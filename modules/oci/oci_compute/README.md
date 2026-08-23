@@ -5,7 +5,10 @@ Creates an OCI compute instance with optional network, public IP, and DNS.
 ## Resources
 
 VCN, internet gateway, route table, subnet, security list, image lookup,
-compute instance, optional reserved IP, and optional DNS records.
+compute instance, optional reserved IP, and optional DNS records. When
+`allocate_reserved_ip` is enabled, the reserved address is attached directly
+to the instance's primary private IP; otherwise `assign_public_ip` controls an
+ephemeral primary-VNIC address.
 
 ## Requirements
 

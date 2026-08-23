@@ -117,6 +117,7 @@ resource "oci_core_public_ip" "reserved" {
   compartment_id = var.compartment_ocid
   lifetime       = "RESERVED"
   display_name   = "${var.name_prefix}-public-ip"
+  private_ip_id  = data.oci_core_vnic_attachments.instance.vnic_attachments[0].create_vnic_details[0].private_ip_id
 }
 
 # Instance
@@ -133,13 +134,15 @@ resource "oci_core_instance" "vm" {
 
   source_details {
     source_type             = "image"
-    image_id                = local.final_image_ocid
+    source_id               = local.final_image_ocid
     boot_volume_size_in_gbs = var.boot_volume_size_gb
   }
 
   create_vnic_details {
-    subnet_id        = local.subnet_id
-    assign_public_ip = var.assign_public_ip
+    subnet_id = local.subnet_id
+    # Reserved public IPs are attached by oci_core_public_ip.private_ip_id.
+    # Otherwise retain the optional ephemeral primary-VNIC address behavior.
+    assign_public_ip = var.assign_public_ip && !var.allocate_reserved_ip
     nsg_ids          = []
   }
 
@@ -151,11 +154,12 @@ resource "oci_core_instance" "vm" {
   preserve_boot_volume = false
 }
 
-# Attach reserved public IP to primary VNIC (if created)
-resource "oci_core_public_ip_assignment" "attach" {
-  count         = var.assign_public_ip && var.allocate_reserved_ip ? 1 : 0
-  public_ip_id  = oci_core_public_ip.reserved[0].id
-  private_ip_id = oci_core_instance.vm.primary_private_ip_id
+# The current OCI instance resource does not export the primary private-IP ID.
+# Resolve it through the supported VNIC attachments data source for reserved
+# public-IP binding.
+data "oci_core_vnic_attachments" "instance" {
+  compartment_id = var.compartment_ocid
+  instance_id    = oci_core_instance.vm.id
 }
 
 # OCI DNS (optional)
@@ -171,10 +175,10 @@ resource "oci_dns_rrset" "a_record" {
   zone_name_or_id = var.create_dns_zone ? oci_dns_zone.zone[0].id : var.existing_zone_id
   domain          = "${var.subdomain}.${var.root_domain}"
   rtype           = "A"
-  items = [{
+  items {
     domain = "${var.subdomain}.${var.root_domain}"
     rtype  = "A"
     ttl    = 300
     rdata  = coalesce(try(oci_core_public_ip.reserved[0].ip_address, null), oci_core_instance.vm.public_ip)
-  }]
+  }
 }
