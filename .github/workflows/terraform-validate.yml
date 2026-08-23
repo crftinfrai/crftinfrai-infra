@@ -20,13 +20,63 @@ jobs:
       - name: Validate every independent Terraform root
         shell: bash
         run: |
-          set -euo pipefail
+          set -uo pipefail
           mapfile -t roots < <(
             find modules bootstrap examples starters templates -type f -name '*.tf' -print \
               | sed 's#/[^/]*$##' | sort -u
           )
+
+          logdir="$(mktemp -d)"
+          total_roots=0
+          validated_ok=0
+          validation_failed=0
+          declare -a failed_roots=()
+          declare -a failed_init_logs=()
+          declare -a failed_validate_logs=()
+          declare -a failed_init_codes=()
+          declare -a failed_validate_codes=()
+
           for root in "${roots[@]}"; do
-            echo "===== Terraform root: $root ====="
-            terraform -chdir="$root" init -backend=false -input=false
-            terraform -chdir="$root" validate -no-color
+            total_roots=$((total_roots + 1))
+            init_log="$logdir/$total_roots.init.log"
+            validate_log="$logdir/$total_roots.validate.log"
+
+            echo "CHECK $root"
+            terraform -chdir="$root" init -backend=false -input=false >"$init_log" 2>&1
+            init_code=$?
+            terraform -chdir="$root" validate -no-color >"$validate_log" 2>&1
+            validate_code=$?
+
+            if [[ "$init_code" -eq 0 && "$validate_code" -eq 0 ]]; then
+              validated_ok=$((validated_ok + 1))
+              echo "PASS $root"
+            else
+              validation_failed=$((validation_failed + 1))
+              failed_roots+=("$root")
+              failed_init_logs+=("$init_log")
+              failed_validate_logs+=("$validate_log")
+              failed_init_codes+=("$init_code")
+              failed_validate_codes+=("$validate_code")
+              echo "FAIL $root (init=$init_code validate=$validate_code)"
+            fi
           done
+
+          echo
+          echo "Terraform Validation Summary"
+          echo "TOTAL_ROOTS=$total_roots"
+          echo "VALIDATED_OK=$validated_ok"
+          echo "VALIDATION_FAILED=$validation_failed"
+
+          if [[ "$validation_failed" -gt 0 ]]; then
+            echo
+            echo "FAILED ROOTS:"
+            for ((i = 0; i < validation_failed; i++)); do
+              echo
+              echo "${failed_roots[$i]}"
+              echo "--- terraform init (exit ${failed_init_codes[$i]}) ---"
+              cat "${failed_init_logs[$i]}"
+              echo "--- terraform validate (exit ${failed_validate_codes[$i]}) ---"
+              cat "${failed_validate_logs[$i]}"
+            done
+            exit 1
+          fi

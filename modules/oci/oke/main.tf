@@ -82,10 +82,10 @@ resource "oci_containerengine_node_pool" "default" {
 
   node_config_details {
     size = var.node_count
-    placement_configs = [{
+    placement_configs {
       availability_domain = var.availability_domain
       subnet_id           = local.node_subnet_id
-    }]
+    }
   }
 
   node_shape_config {
@@ -98,6 +98,8 @@ resource "oci_containerengine_node_pool" "default" {
     source_type = "image"
   }
 
-  initial_node_labels = [{ key = "app", value = "crft" }]
+  initial_node_labels {
+    key   = "app"
+    value = "crft"
+  }
 }
-

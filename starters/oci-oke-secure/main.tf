@@ -19,7 +19,10 @@ resource "oci_containerengine_cluster" "oke" {
   name               = var.oke_name
   vcn_id             = oci_core_vcn.vcn.id
   kubernetes_version = "v1.28.2"
-  endpoint_config { is_public_ip_enabled = false }
+  endpoint_config {
+    is_public_ip_enabled = false
+    subnet_id            = oci_core_subnet.subnet.id
+  }
 }
 
 resource "oci_containerengine_node_pool" "np" {
