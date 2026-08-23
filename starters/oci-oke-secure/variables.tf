@@ -6,6 +6,10 @@ variable "region" {
   type    = string
   default = "ap-hyderabad-1"
 }
+variable "availability_domain" {
+  type        = string
+  description = "OCI availability domain for the OKE node pool placement."
+}
 variable "vcn_cidr" {
   type    = string
   default = "10.40.0.0/16"

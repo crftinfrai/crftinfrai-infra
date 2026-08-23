@@ -31,7 +31,10 @@ resource "oci_containerengine_node_pool" "np" {
   name               = "${var.oke_name}-pool"
   kubernetes_version = oci_containerengine_cluster.oke.kubernetes_version
   node_config_details {
-    placement_configs { subnet_id = oci_core_subnet.subnet.id }
+    placement_configs {
+      availability_domain = var.availability_domain
+      subnet_id           = oci_core_subnet.subnet.id
+    }
     size = 2
   }
   node_shape = var.node_shape

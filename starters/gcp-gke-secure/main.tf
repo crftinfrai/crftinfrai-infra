@@ -69,7 +69,7 @@ resource "google_container_cluster" "gke" {
   monitoring_config { enable_components = ["SYSTEM_COMPONENTS"] }
 
   deletion_protection = false
-  labels              = local.common_labels
+  resource_labels     = local.common_labels
 
   # default node pool removed; use managed node pool
   remove_default_node_pool = true

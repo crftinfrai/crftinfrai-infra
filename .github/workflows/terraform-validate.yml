@@ -11,11 +11,19 @@ permissions:
 jobs:
   terraform:
     runs-on: ubuntu-latest
+    env:
+      TF_PLUGIN_CACHE_DIR: ${{ runner.temp }}/terraform-plugin-cache
     steps:
       - uses: actions/checkout@v4
       - uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.11.2
+      - name: Prepare Terraform provider cache
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$TF_PLUGIN_CACHE_DIR"
+          df -h
       - run: terraform fmt -check -recursive
       - name: Validate every independent Terraform root
         shell: bash
@@ -66,6 +74,18 @@ jobs:
               failed_init_codes+=("$init_code")
               failed_validate_codes+=("$validate_code")
               echo "FAIL $root (init=$init_code validate=$validate_code)"
+            fi
+
+            # Keep the shared provider cache, but remove each root's local
+            # installation before moving to the next root.
+            rm -rf "$root/.terraform"
+            if ! git ls-files --error-unmatch -- "$root/.terraform.lock.hcl" >/dev/null 2>&1; then
+              rm -f "$root/.terraform.lock.hcl"
+            fi
+            rm -f "$root/.terraform.tfstate.lock.info"
+
+            if (( total_roots % 5 == 0 )); then
+              df -h
             fi
           done
 
