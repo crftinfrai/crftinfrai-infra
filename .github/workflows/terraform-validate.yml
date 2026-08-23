@@ -42,10 +42,18 @@ jobs:
             validate_log="$logdir/$total_roots.validate.log"
 
             echo "CHECK $root"
-            terraform -chdir="$root" init -backend=false -input=false >"$init_log" 2>&1
-            init_code=$?
-            terraform -chdir="$root" validate -no-color >"$validate_log" 2>&1
-            validate_code=$?
+            # Keep each failure inside an if conditional so the loop always
+            # continues to the next root, even if errexit is enabled later.
+            if terraform -chdir="$root" init -backend=false -input=false >"$init_log" 2>&1; then
+              init_code=0
+            else
+              init_code=$?
+            fi
+            if terraform -chdir="$root" validate -no-color >"$validate_log" 2>&1; then
+              validate_code=0
+            else
+              validate_code=$?
+            fi
 
             if [[ "$init_code" -eq 0 && "$validate_code" -eq 0 ]]; then
               validated_ok=$((validated_ok + 1))

@@ -15,10 +15,14 @@ resource "google_compute_subnetwork" "subnet" {
   region                   = var.region
   network                  = google_compute_network.vpc.id
   private_ip_google_access = true
-  secondary_ip_range = [
-    { range_name = "pods", ip_cidr_range = "10.21.0.0/16" },
-    { range_name = "services", ip_cidr_range = "10.22.0.0/16" }
-  ]
+  secondary_ip_range {
+    range_name    = "pods"
+    ip_cidr_range = "10.21.0.0/16"
+  }
+  secondary_ip_range {
+    range_name    = "services"
+    ip_cidr_range = "10.22.0.0/16"
+  }
 }
 
 # Private Service Connect for Cloud SQL
@@ -96,7 +100,8 @@ resource "google_sql_database_instance" "db" {
   region           = var.region
 
   settings {
-    tier = var.db_tier
+    tier        = var.db_tier
+    user_labels = local.common_labels
     ip_configuration {
       ipv4_enabled    = false
       private_network = google_compute_network.vpc.id
@@ -110,7 +115,6 @@ resource "google_sql_database_instance" "db" {
   }
 
   deletion_protection = true
-  labels              = local.common_labels
 }
 
 resource "google_sql_user" "db_user" {
