@@ -77,7 +77,7 @@ Provide cloud authentication through the provider's supported CLI, environment, 
 
 - Website: https://crftinfrai.com
 - Console: https://console.crftinfrai.com
-- GitHub: https://github.com/pawancrftinfrai
+- GitHub: https://github.com/crftinfrai
 
 ## Cost Warning
 
